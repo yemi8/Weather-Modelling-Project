@@ -1,86 +1,165 @@
 import math
-import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
+
 def quadratic_solver(a, b, c):
-    # Calculate the discriminant
-    discriminant = b**2 - 4*a*c
-   
-    # Check if the discriminant is positive, zero, or negative
+    """
+    Solves the quadratic equation ax² + bx + c = 0
+    Returns:
+        tuple -> Two real roots
+        None  -> No real roots
+    Raises:
+        ValueError -> If a is zero
+    """
+
+    if a == 0:
+        raise ValueError("Coefficient 'a' cannot be zero. This is not a quadratic equation.")
+
+    discriminant = b**2 - 4 * a * c
+
     if discriminant > 0:
-        root1 = (-b + math.sqrt(discriminant)) / (2*a)
-        root2 = (-b - math.sqrt(discriminant)) / (2*a)
+        root1 = (-b + math.sqrt(discriminant)) / (2 * a)
+        root2 = (-b - math.sqrt(discriminant)) / (2 * a)
         return root1, root2
+
     elif discriminant == 0:
-        root = -b / (2*a)
+        root = -b / (2 * a)
         return root, root
+
     else:
         return None
 
+
 def solve_weather_equation(a, b, c):
-    solutions = quadratic_solver(a, b, c)
-    return solutions
+    """
+    Calls the quadratic solver.
+    """
+    return quadratic_solver(a, b, c)
+
 
 def plot_weather_model(a, b, c):
-    # Calculate the discriminant
-    discriminant = b**2 - 4*a*c
+    """
+    Plots the quadratic weather model.
+    """
 
-    # Check if there are real roots before plotting
-    if discriminant >= 0:
-        x = range(-4, 4)  # Range of x values
-        y = [a * (i**2) + b * i + c for i in x]  # Calculate y values based on quadratic equation
+    x = np.linspace(-10, 10, 400)
+    y = a * x**2 + b * x + c
 
-        plt.figure(figsize=(8, 6))
-        plt.plot(x, y, label=f"{a}x^2 + {b}x + {c}")  # Plot the quadratic function
-        plt.axhline(0, color='black',linewidth=0.5)
-        plt.axvline(0, color='black',linewidth=0.5)
-        plt.title('Weather Model')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-        plt.legend()
-        plt.grid(True)
-        plt.show()
-    else:
-        print("No real roots. Cannot plot the graph.")
+    plt.figure(figsize=(8, 6))
+    plt.plot(x, y, color="blue", linewidth=2,
+             label=f"{a}x² + {b}x + {c}")
+
+    plt.axhline(0, color="black", linewidth=1)
+    plt.axvline(0, color="black", linewidth=1)
+
+    plt.title("Weather Modeling Using Quadratic Equation")
+    plt.xlabel("X Values")
+    plt.ylabel("Y Values")
+    plt.grid(True)
+    plt.legend()
+
+    plt.show()
+
+
+def display_results(a, b, c):
+    """
+    Displays roots and plots the graph.
+    """
+
+    try:
+        roots = solve_weather_equation(a, b, c)
+
+        print("\n----------------------------")
+        print("Weather Equation")
+        print(f"{a}x² + {b}x + {c} = 0")
+
+        if roots:
+            print(f"Root 1 : {roots[0]:.2f}")
+            print(f"Root 2 : {roots[1]:.2f}")
+        else:
+            print("No Real Roots Found.")
+
+        print("----------------------------\n")
+
+        plot_weather_model(a, b, c)
+
+    except ValueError as e:
+        print(e)
+
+
+def read_from_file(filename):
+    """
+    Reads coefficients from a file.
+    File Format:
+    a b c
+    """
+
+    try:
+        with open(filename, "r") as file:
+
+            for line_number, line in enumerate(file, start=1):
+
+                try:
+                    values = list(map(float, line.split()))
+
+                    if len(values) != 3:
+                        print(f"Skipping Line {line_number}: Invalid data")
+                        continue
+
+                    a, b, c = values
+
+                    print(f"\nEquation {line_number}")
+                    display_results(a, b, c)
+
+                except ValueError:
+                    print(f"Skipping Line {line_number}: Invalid numeric values")
+
+    except FileNotFoundError:
+        print("Error: File not found.")
 
 
 def main():
-    choice = input("Choose an option:\n1. Hard-coded variables\n2. Keyboard input\n3. Read from a file\n")
 
-    if choice == '1':
-        # Hard-coded coefficients for a quadratic equation representing a weather model
-        a = 2
-        b = -7
-        c = 3
-        solutions = solve_weather_equation(a, b, c)
-        print("Solutions:", solutions)
-        plot_weather_model(a, b, c)
-       
-    elif choice == '2':
-        # Take coefficients from user input
-        a = float(input("Enter coefficient a: "))
-        b = float(input("Enter coefficient b: "))
-        c = float(input("Enter coefficient c: "))
-        solutions = solve_weather_equation(a, b, c)
-        print("Solutions:", solutions)
-        plot_weather_model(a, b, c)
-       
-    elif choice == '3':
-        try:
-            filename = input("Enter the file name with coefficients (e.g., coefficients.txt): ")
-            with open(filename, 'r') as file:
-                lines = file.readlines()
-                for line in lines:
-                    coefficients = list(map(float, line.split()))
-                    a, b, c = coefficients
-                    solutions = solve_weather_equation(a, b, c)
-                    print(f"Coefficients: {coefficients} -> Solutions: {solutions}")
-                    plot_weather_model(a, b, c)
-        except FileNotFoundError:
-            print("File not found. Please provide a valid file name.")
-       
-    else:
-        print("Invalid choice. Please select 1, 2, or 3.")
+    while True:
+
+        print("\n========= WEATHER MODEL =========")
+        print("1. Hardcoded Values")
+        print("2. Keyboard Input")
+        print("3. Read From File")
+        print("4. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+
+            display_results(2, -7, 3)
+
+        elif choice == "2":
+
+            try:
+                a = float(input("Enter coefficient a: "))
+                b = float(input("Enter coefficient b: "))
+                c = float(input("Enter coefficient c: "))
+
+                display_results(a, b, c)
+
+            except ValueError:
+                print("Please enter valid numeric values.")
+
+        elif choice == "3":
+
+            filename = input("Enter filename: ")
+            read_from_file(filename)
+
+        elif choice == "4":
+
+            print("Thank you for using Weather Modeling System.")
+            break
+
+        else:
+            print("Invalid Choice. Please select between 1 and 4.")
+
 
 if __name__ == "__main__":
     main()
